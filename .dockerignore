@@ -1,0 +1,6 @@
+# Send only Maven configuration and application sources to the standard build.
+# Private settings, databases, legacy code, and local dependencies stay on the host.
+**
+!pom.xml
+!src/
+!src/**

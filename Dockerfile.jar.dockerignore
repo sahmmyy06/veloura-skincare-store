@@ -1,0 +1,4 @@
+# This optional build needs only the packaged JAR, never source or private settings.
+**
+!target/
+!target/veloura-store-1.0.0.jar

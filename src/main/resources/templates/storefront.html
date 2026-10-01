@@ -1,0 +1,34 @@
+<!-- A focused welcome page; catalogue and brand story have their own routes. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Skincare for everyday confidence')}"></head>
+<body class="home-page">
+<div th:replace="~{fragments :: header}"></div>
+<main>
+    <section class="hero shell">
+        <div class="hero-copy">
+            <h1>Soft skin.<br><em>Quiet confidence.</em></h1>
+            <p>Thoughtfully selected creams and moisturizers for women who want simple,
+                beautiful everyday skincare.</p>
+            <div class="hero-actions">
+                <a class="primary" href="/shop">Shop the collection
+                    <svg th:replace="~{fragments :: icon('arrow-right')}"></svg>
+                </a>
+                <a class="text-link" href="/our-story">Our story</a>
+            </div>
+            <div class="hero-notes">
+                <span><svg th:replace="~{fragments :: icon('sparkles')}"></svg>Moisture-first formulas</span>
+                <span><svg th:replace="~{fragments :: icon('shield')}"></svg>Carefully curated</span>
+            </div>
+        </div>
+        <div class="hero-media">
+            <img src="/images/veloura-skincare-hero.webp"
+                 alt="Woman applying skincare cream">
+            <div class="hero-card"><span>Daily ritual</span><strong>Glow, without the fuss.</strong></div>
+        </div>
+    </section>
+    <section th:replace="~{fragments :: benefits}"></section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

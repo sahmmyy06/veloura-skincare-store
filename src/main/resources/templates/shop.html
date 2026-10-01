@@ -1,0 +1,68 @@
+<!-- Six products per page keep the catalogue compact; filters persist through pagination. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Shop the collection')}"></head>
+<body class="shop-page">
+<div th:replace="~{fragments :: header}"></div>
+<main class="shell html-section">
+    <div class="page-heading">
+        <div>
+            <h1>Find your daily favourite</h1>
+            <p>Comforting creams for every part of your routine.</p>
+        </div>
+        <span class="result-count" th:text="${totalProducts} + ' products'"></span>
+    </div>
+    <!-- GET puts filters in the URL so Spring can read them as request parameters. -->
+    <form method="get" action="/shop" class="filter-form shop-filters">
+        <div class="search-field">
+            <svg th:replace="~{fragments :: icon('search')}"></svg>
+            <input type="search" name="search" th:value="${search}" placeholder="Search products"
+                   aria-label="Search products">
+        </div>
+        <select name="category" aria-label="Product category">
+            <option th:each="option : ${categories}" th:value="${option}"
+                    th:text="${option}" th:selected="${option == category}"></option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <p th:if="${#lists.isEmpty(products)}" class="empty-state">No products match your search.</p>
+    <div class="product-grid">
+        <!-- Thymeleaf repeats this card for each product supplied by StorePages. -->
+        <article class="product-card" th:each="product : ${products}">
+            <a class="product-image" th:href="@{/products/{id}(id=${product.id})}">
+                <img th:src="${product.image}" th:alt="${product.name}" loading="lazy" data-product-image>
+                <span class="tag" th:if="${product.featured == 1}">Bestseller</span>
+            </a>
+            <div class="product-copy">
+                <p class="product-category" th:text="${product.category}"></p>
+                <a class="product-title" th:href="@{/products/{id}(id=${product.id})}"
+                   th:text="${product.name}"></a>
+                <p class="product-description" th:text="${product.description}"></p>
+                <div class="product-footer">
+                    <strong th:text="'₦' + ${#numbers.formatInteger(product.price, 1, 'COMMA')}"></strong>
+                    <!-- These data attributes let cart.js identify the clicked product. -->
+                    <button class="add-button" type="button" th:disabled="${product.stock < 1}"
+                            th:attr="data-add=${product.id},data-name=${product.name},data-price=${product.price},data-stock=${product.stock}">
+                        <svg th:replace="~{fragments :: icon('plus')}"></svg>
+                        <span th:text="${product.stock < 1 ? 'Sold out' : 'Add'}"></span>
+                    </button>
+                </div>
+            </div>
+        </article>
+    </div>
+    <nav class="pagination" aria-label="Catalogue pages" th:if="${pageCount > 1}">
+        <a th:if="${page > 1}" class="button button-secondary"
+           th:href="@{/shop(page=${page - 1},category=${category},search=${search})}">
+            <svg th:replace="~{fragments :: icon('arrow-left')}"></svg>Previous
+        </a>
+        <span th:text="'Page ' + ${page} + ' of ' + ${pageCount}"></span>
+        <a th:if="${page < pageCount}" class="button button-secondary"
+           th:href="@{/shop(page=${page + 1},category=${category},search=${search})}">
+            Next<svg th:replace="~{fragments :: icon('arrow-right')}"></svg>
+        </a>
+    </nav>
+    <p id="cart-message" class="cart-notice" role="status" aria-live="polite"></p>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

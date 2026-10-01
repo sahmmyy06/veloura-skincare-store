@@ -1,0 +1,63 @@
+<!-- Shared storefront navigation; Thymeleaf renders this before sending HTML. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Veloura'">Veloura</title>
+    <meta name="description" content="Thoughtfully selected creams for beautiful everyday skincare.">
+    <meta property="og:image" content="/images/veloura-social.png">
+    <link rel="stylesheet" href="/css/storefront.css">
+    <link rel="stylesheet" href="/css/pages.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192.png">
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+    <meta th:if="${success}" name="veloura-notice" th:content="${success}" data-notice-type="success">
+    <meta th:if="${error}" name="veloura-notice" th:content="${error}" data-notice-type="error">
+    <script defer src="/js/notifications.js"></script>
+    <script defer src="/js/cart.js"></script>
+</head>
+<body>
+<svg th:fragment="icon(name)" class="icon" aria-hidden="true" focusable="false">
+    <use th:href="${'/icons.svg#' + name}"></use>
+</svg>
+<div th:fragment="header">
+    <div class="announcement">Your daily ritual for soft, beautiful skin.</div>
+    <header class="header shell">
+        <a class="brand brand-lockup" href="/">
+            <img src="/brand/icon-192.png" alt="" width="32" height="32">VELOURA
+        </a>
+        <nav class="html-nav" aria-label="Main navigation">
+            <a href="/" th:attr="aria-current=${activePage == 'home' ? 'page' : null}">Home</a>
+            <a href="/shop" th:attr="aria-current=${activePage == 'shop' ? 'page' : null}">Shop</a>
+            <a href="/our-story" th:attr="aria-current=${activePage == 'story' ? 'page' : null}">Our Story</a>
+        </nav>
+        <a class="cart-trigger" href="/checkout">
+            <svg th:replace="~{fragments :: icon('bag')}"></svg>Bag <b data-cart-count>0</b>
+        </a>
+    </header>
+</div>
+<section th:fragment="benefits" class="benefit-strip">
+    <div class="shell benefits">
+        <div><svg th:replace="~{fragments :: icon('truck')}"></svg>
+            <span><strong>Fast delivery</strong>Across Nigeria</span></div>
+        <div><svg th:replace="~{fragments :: icon('sparkles')}"></svg>
+            <span><strong>Everyday care</strong>Simple routines</span></div>
+        <div><svg th:replace="~{fragments :: icon('shield')}"></svg>
+            <span><strong>Secure checkout</strong>Your details stay protected</span></div>
+    </div>
+</section>
+<footer th:fragment="footer">
+    <div class="shell footer">
+        <div><a class="brand inverse brand-lockup" href="/">
+            <img src="/brand/icon-192.png" alt="" width="32" height="32">VELOURA
+        </a>
+            <p>Everyday skincare for soft, nourished skin.</p></div>
+        <div><strong>Explore</strong><a href="/shop">All products</a>
+            <a href="/our-story">Why Veloura</a><a href="/admin">Admin workspace</a></div>
+        <div><strong>Contact</strong><span>Lagos, Nigeria</span><span>hello@veloura.store</span></div>
+    </div>
+    <div class="shell copyright">© 2026 Veloura. Demo storefront.</div>
+</footer>
+</body>
+</html>

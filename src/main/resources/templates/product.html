@@ -1,0 +1,28 @@
+<!-- A product detail page replaces the React product modal. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${product.name})}"></head>
+<body>
+<div th:replace="~{fragments :: header}"></div>
+<main class="shell html-section product-detail">
+    <img th:src="${product.image}" th:alt="${product.name}" data-product-image>
+    <div>
+        <a class="text-link" href="/shop">← Back to the collection</a>
+        <p class="product-category" th:text="${product.category}"></p>
+        <h1 th:text="${product.name}"></h1>
+        <p th:text="${product.description}"></p>
+        <p th:text="${product.benefits}"></p>
+        <h2 th:text="'₦' + ${#numbers.formatInteger(product.price, 1, 'COMMA')}"></h2>
+        <p th:text="${product.stock} + ' available'"></p>
+        <button class="primary" type="button" th:disabled="${product.stock < 1}"
+                th:attr="data-add=${product.id},data-name=${product.name},data-price=${product.price},data-stock=${product.stock}"
+                >
+            <svg th:replace="~{fragments :: icon('bag')}"></svg>
+            <span th:text="${product.stock < 1 ? 'Sold out' : 'Add to bag'}"></span>
+        </button>
+        <p id="cart-message" role="status" aria-live="polite"></p>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
