@@ -1,0 +1,61 @@
+# SQLite allows one writer, so this runs exactly one pod and replaces it in place.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: store
+  template:
+    metadata:
+      labels:
+        app: store
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: store
+          image: veloura-store
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 4000
+          env:
+            - {name: PORT, value: "4000"}
+            - {name: DATABASE_URL, value: "jdbc:sqlite:/app/server/data/veloura.db"}
+            - {name: VELOURA_PRODUCTION, value: "false"}
+            - {name: CLIENT_ORIGIN, value: "http://localhost:30400"}
+            - name: ADMIN_EMAIL
+              valueFrom: {secretKeyRef: {name: store-admin, key: ADMIN_EMAIL}}
+            - name: ADMIN_PASSWORD
+              valueFrom: {secretKeyRef: {name: store-admin, key: ADMIN_PASSWORD}}
+            - name: ADMIN_SESSION_SECRET
+              valueFrom: {secretKeyRef: {name: store-admin, key: ADMIN_SESSION_SECRET}}
+          readinessProbe:
+            httpGet: {path: /api/health, port: http}
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /api/health, port: http}
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - {name: data, mountPath: /app/server/data}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: veloura-data
