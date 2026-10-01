@@ -1,0 +1,39 @@
+<!-- Products and inventory share the same catalogue and stock management forms. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Products and inventory')}"></head>
+<body>
+<header th:replace="~{admin/fragments :: nav}"></header>
+<main class="shell html-section">
+    <h1>Products &amp; inventory</h1>
+    <a class="primary" href="/admin/products/new">
+        <svg th:replace="~{fragments :: icon('plus')}"></svg>Add product
+    </a>
+    <p class="error" th:if="${error}" th:text="${error}" role="alert"></p>
+    <form class="filter-form" action="/admin/products" method="get">
+        <input type="search" name="search" th:value="${search}" aria-label="Search products">
+        <button type="submit">Search</button>
+    </form>
+    <div class="table-scroll"><table>
+        <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+        <tbody><tr th:each="product : ${products}">
+            <td th:text="${product.name}"></td><td th:text="${product.category}"></td>
+            <td th:text="'₦' + ${#numbers.formatInteger(product.price, 1, 'COMMA')}"></td>
+            <td th:text="${product.stock}" th:class="${product.stock <= 5 ? 'error' : ''}"></td>
+            <td>
+                <a class="button button-secondary button-small"
+                   th:href="@{/admin/products/{id}/edit(id=${product.id})}">
+                    <svg th:replace="~{fragments :: icon('edit')}"></svg>Edit
+                </a>
+                <form th:action="@{/admin/products/{id}/delete(id=${product.id})}" method="post">
+                    <button class="button-danger button-small" type="submit">
+                        <svg th:replace="~{fragments :: icon('trash')}"></svg>Delete
+                    </button>
+                </form>
+            </td>
+        </tr></tbody>
+    </table></div>
+    <p th:if="${#lists.isEmpty(products)}">No products match your search.</p>
+</main>
+</body>
+</html>

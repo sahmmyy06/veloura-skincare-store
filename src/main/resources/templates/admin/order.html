@@ -1,0 +1,33 @@
+<!-- Order snapshots stay accurate even after catalogue prices and names change. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Order details')}"></head>
+<body>
+<header th:replace="~{admin/fragments :: nav}"></header>
+<main class="shell html-section">
+    <a href="/admin/orders">← All orders</a>
+    <h1 th:text="${order.order_number}"></h1>
+    <p th:text="${order.customer_name} + ' · ' + ${order.email} + ' · ' + ${order.phone}"></p>
+    <p th:text="${order.address} + ', ' + ${order.city}"></p>
+    <p th:text="${order.notes}"></p>
+    <p class="error" th:if="${error}" th:text="${error}" role="alert"></p>
+    <form class="filter-form" th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"
+                    th:selected="${status == order.status}"></option>
+        </select>
+        <button type="submit">Update status</button>
+    </form>
+    <div class="table-scroll"><table>
+        <thead><tr><th>Product</th><th>Unit price</th><th>Quantity</th></tr></thead>
+        <tbody><tr th:each="item : ${order.items}">
+            <td th:text="${item.product_name}"></td>
+            <td th:text="'₦' + ${#numbers.formatInteger(item.price, 1, 'COMMA')}"></td>
+            <td th:text="${item.quantity}"></td>
+        </tr></tbody>
+    </table></div>
+    <h2 th:text="'Total: ₦' + ${#numbers.formatInteger(order.total, 1, 'COMMA')}"></h2>
+</main>
+</body>
+</html>

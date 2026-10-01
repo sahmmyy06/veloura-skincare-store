@@ -1,0 +1,23 @@
+<!-- Shared navigation for the Java-rendered admin workspace. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="nav" class="admin-topbar shell">
+    <a class="brand brand-lockup" href="/admin">
+        <img src="/brand/icon-192.png" alt="" width="32" height="32">VELOURA
+    </a>
+    <nav>
+        <a href="/admin"><svg th:replace="~{fragments :: icon('dashboard')}"></svg>Dashboard</a>
+        <a href="/admin/products"><svg th:replace="~{fragments :: icon('box')}"></svg>Products</a>
+        <a href="/admin/inventory"><svg th:replace="~{fragments :: icon('inventory')}"></svg>Inventory</a>
+        <a href="/admin/orders"><svg th:replace="~{fragments :: icon('orders')}"></svg>Orders</a>
+        <a href="/"><svg th:replace="~{fragments :: icon('home')}"></svg>Storefront</a>
+    </nav>
+    <form action="/admin/logout" method="post">
+        <button class="button-secondary" type="submit">
+            <svg th:replace="~{fragments :: icon('logout')}"></svg>Sign out
+        </button>
+    </form>
+</header>
+</body>
+</html>

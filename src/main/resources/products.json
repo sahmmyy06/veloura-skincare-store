@@ -1,0 +1,222 @@
+[
+  {
+    "name": "Radiance Glow Body Cream",
+    "slug": "radiance-glow-body-cream",
+    "category": "Body Cream",
+    "price": 18500,
+    "description": "A rich daily moisturizer that softens dry skin and leaves a luminous, non-greasy finish.",
+    "benefits": "Shea butter • Niacinamide • Vitamin E",
+    "image": "/products/01-radiance-glow-body-cream.webp",
+    "stock": 18,
+    "featured": 1
+  },
+  {
+    "name": "Rose Dew Face Cream",
+    "slug": "rose-dew-face-cream",
+    "category": "Face Cream",
+    "price": 14500,
+    "description": "A lightweight face cream for soft, balanced-looking skin with a smooth finish.",
+    "benefits": "Rose water • Squalane • Hyaluronic acid",
+    "image": "/products/02-rose-dew-face-cream.webp",
+    "stock": 24,
+    "featured": 1
+  },
+  {
+    "name": "Cocoa Silk Body Butter",
+    "slug": "cocoa-silk-body-butter",
+    "category": "Body Butter",
+    "price": 16800,
+    "description": "Deep nourishment for elbows, knees and very dry areas, with a velvety cocoa scent.",
+    "benefits": "Cocoa butter • Shea butter • Jojoba oil",
+    "image": "/products/03-cocoa-silk-body-butter.webp",
+    "stock": 15,
+    "featured": 1
+  },
+  {
+    "name": "Soft Hands Repair Cream",
+    "slug": "soft-hands-repair-cream",
+    "category": "Hand Cream",
+    "price": 8500,
+    "description": "A compact moisture-rich cream for hands exposed to frequent washing and dry weather.",
+    "benefits": "Glycerin • Panthenol • Ceramides",
+    "image": "/products/04-soft-hands-repair-cream.webp",
+    "stock": 30,
+    "featured": 0
+  },
+  {
+    "name": "Even Tone Night Cream",
+    "slug": "even-tone-night-cream",
+    "category": "Face Cream",
+    "price": 17200,
+    "description": "A calming night moisturizer designed to support a more even-looking complexion over time.",
+    "benefits": "Niacinamide • Licorice root • Ceramides",
+    "image": "/products/05-even-tone-night-cream.webp",
+    "stock": 20,
+    "featured": 1
+  },
+  {
+    "name": "Vanilla Cloud Body Lotion",
+    "slug": "vanilla-cloud-body-lotion",
+    "category": "Body Cream",
+    "price": 12800,
+    "description": "A light everyday lotion with a soft vanilla finish for comfortable, hydrated skin.",
+    "benefits": "Aloe vera • Vitamin E • Sweet almond oil",
+    "image": "/products/06-vanilla-cloud-body-lotion.webp",
+    "stock": 28,
+    "featured": 0
+  },
+  {
+    "name": "Peptide Plump Face Cream",
+    "slug": "peptide-plump-face-cream",
+    "category": "Face Cream",
+    "price": 19500,
+    "description": "A cushiony moisturizer that supports a plump, supple look without feeling heavy.",
+    "benefits": "Peptides • Squalane • Hyaluronic acid",
+    "image": "/products/07-peptide-plump-face-cream.webp",
+    "stock": 17,
+    "featured": 1
+  },
+  {
+    "name": "Mango Melt Body Butter",
+    "slug": "mango-melt-body-butter",
+    "category": "Body Butter",
+    "price": 15800,
+    "description": "A whipped tropical body butter that melts into dry skin for long-lasting comfort.",
+    "benefits": "Mango butter • Shea butter • Coconut oil",
+    "image": "/products/08-mango-melt-body-butter.webp",
+    "stock": 22,
+    "featured": 0
+  },
+  {
+    "name": "Vitamin C Day Cream",
+    "slug": "vitamin-c-day-cream",
+    "category": "Face Cream",
+    "price": 18200,
+    "description": "A brightening daytime moisturizer made for a fresh, rested-looking complexion.",
+    "benefits": "Vitamin C derivative • Vitamin E • Squalane",
+    "image": "/products/09-vitamin-c-day-cream.webp",
+    "stock": 19,
+    "featured": 1
+  },
+  {
+    "name": "Coconut Milk Body Cream",
+    "slug": "coconut-milk-body-cream",
+    "category": "Body Cream",
+    "price": 13500,
+    "description": "A creamy everyday hydrator with a soft coconut scent and silky after-feel.",
+    "benefits": "Coconut milk • Glycerin • Shea butter",
+    "image": "/products/10-coconut-milk-body-cream.webp",
+    "stock": 26,
+    "featured": 0
+  },
+  {
+    "name": "Ceramide Barrier Cream",
+    "slug": "ceramide-barrier-cream",
+    "category": "Face Cream",
+    "price": 18800,
+    "description": "A comforting moisturizer designed for dry, easily stressed skin and barrier support.",
+    "benefits": "Ceramides • Panthenol • Oat extract",
+    "image": "/products/11-ceramide-barrier-cream.webp",
+    "stock": 16,
+    "featured": 1
+  },
+  {
+    "name": "Lavender Sleep Body Butter",
+    "slug": "lavender-sleep-body-butter",
+    "category": "Body Butter",
+    "price": 16500,
+    "description": "A rich nighttime body butter with a soft lavender scent for an indulgent evening routine.",
+    "benefits": "Shea butter • Lavender • Jojoba oil",
+    "image": "/products/12-lavender-sleep-body-butter.webp",
+    "stock": 14,
+    "featured": 0
+  },
+  {
+    "name": "Bright Hands Hand Cream",
+    "slug": "bright-hands-hand-cream",
+    "category": "Hand Cream",
+    "price": 9200,
+    "description": "A fast-absorbing hand cream that moisturizes without leaving palms greasy.",
+    "benefits": "Niacinamide • Glycerin • Vitamin E",
+    "image": "/products/13-bright-hands-hand-cream.webp",
+    "stock": 35,
+    "featured": 0
+  },
+  {
+    "name": "Aloe Calm Face Cream",
+    "slug": "aloe-calm-face-cream",
+    "category": "Face Cream",
+    "price": 13800,
+    "description": "A lightweight soothing cream for hot days or skin that needs simple hydration.",
+    "benefits": "Aloe vera • Panthenol • Centella",
+    "image": "/products/14-aloe-calm-face-cream.webp",
+    "stock": 25,
+    "featured": 0
+  },
+  {
+    "name": "Shea Satin Body Cream",
+    "slug": "shea-satin-body-cream",
+    "category": "Body Cream",
+    "price": 14900,
+    "description": "A silky body cream for everyday moisture with a soft satin finish.",
+    "benefits": "Shea butter • Glycerin • Vitamin E",
+    "image": "/products/15-shea-satin-body-cream.webp",
+    "stock": 21,
+    "featured": 0
+  },
+  {
+    "name": "Golden Hour Glow Cream",
+    "slug": "golden-hour-glow-cream",
+    "category": "Body Cream",
+    "price": 17900,
+    "description": "A glow-enhancing body moisturizer that leaves skin looking smooth and radiant.",
+    "benefits": "Niacinamide • Mica • Sweet almond oil",
+    "image": "/products/16-golden-hour-glow-cream.webp",
+    "stock": 18,
+    "featured": 1
+  },
+  {
+    "name": "Honey Oat Comfort Cream",
+    "slug": "honey-oat-comfort-cream",
+    "category": "Face Cream",
+    "price": 15400,
+    "description": "A gentle comfort cream for dry skin with a soft, nourishing texture.",
+    "benefits": "Colloidal oat • Honey extract • Ceramides",
+    "image": "/products/17-honey-oat-comfort-cream.webp",
+    "stock": 20,
+    "featured": 0
+  },
+  {
+    "name": "Berry Smooth Body Butter",
+    "slug": "berry-smooth-body-butter",
+    "category": "Body Butter",
+    "price": 16200,
+    "description": "A whipped body butter with a subtle berry scent and plush skin feel.",
+    "benefits": "Shea butter • Berry extract • Jojoba oil",
+    "image": "/products/18-berry-smooth-body-butter.webp",
+    "stock": 17,
+    "featured": 0
+  },
+  {
+    "name": "Silk Veil Hand Cream",
+    "slug": "silk-veil-hand-cream",
+    "category": "Hand Cream",
+    "price": 8800,
+    "description": "A handbag-friendly hand cream that softens cuticles and dry hands throughout the day.",
+    "benefits": "Glycerin • Squalane • Panthenol",
+    "image": "/products/19-silk-veil-hand-cream.webp",
+    "stock": 32,
+    "featured": 0
+  },
+  {
+    "name": "Midnight Renewal Cream",
+    "slug": "midnight-renewal-cream",
+    "category": "Face Cream",
+    "price": 20500,
+    "description": "A richer overnight moisturizer for a smoother, rested-looking complexion by morning.",
+    "benefits": "Bakuchiol • Peptides • Ceramides",
+    "image": "/products/20-midnight-renewal-cream.webp",
+    "stock": 13,
+    "featured": 1
+  }
+]

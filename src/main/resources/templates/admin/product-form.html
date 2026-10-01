@@ -1,0 +1,33 @@
+<!-- Standard HTML form; validation errors redisplay the submitted values. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Manage product')}"></head>
+<body>
+<header th:replace="~{admin/fragments :: nav}"></header>
+<main class="shell html-section">
+    <h1 th:text="${product.id == null ? 'Add product' : 'Edit product'}"></h1>
+    <p class="error" th:if="${error}" th:text="${error}" role="alert"></p>
+    <form action="/admin/products/save" method="post" class="html-form">
+        <input type="hidden" name="id" th:value="${product.id}">
+        <label>Name<input name="name" th:value="${product.name}" required></label>
+        <label>Slug<input name="slug" th:value="${product.slug}" placeholder="Generated from name if blank"></label>
+        <label>Category<select name="category">
+            <option th:each="category : ${ {'Face Cream', 'Body Cream', 'Body Butter', 'Hand Cream'} }"
+                    th:value="${category}" th:text="${category}"
+                    th:selected="${category == product.category}"></option>
+        </select></label>
+        <label>Price (Naira)<input name="price" type="number" min="0" step="1"
+                                  th:value="${product.price}" required></label>
+        <label>Stock<input name="stock" type="number" min="0" step="1"
+                          th:value="${product.stock}" required></label>
+        <label>Description<textarea name="description" th:text="${product.description}" required></textarea></label>
+        <label>Benefits<textarea name="benefits" th:text="${product.benefits}" required></textarea></label>
+        <label>Image URL<input name="image" th:value="${product.image}" placeholder="/products/placeholder.svg"></label>
+        <label class="checkbox"><input name="featured" type="checkbox" value="1"
+                                       th:checked="${product.featured != null and product.featured.toString() == '1'}"> Bestseller</label>
+        <button class="primary" type="submit">Save product</button>
+        <a class="button button-secondary" href="/admin/products">Cancel</a>
+    </form>
+</main>
+</body>
+</html>

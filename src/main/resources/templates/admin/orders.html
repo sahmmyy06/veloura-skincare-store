@@ -1,0 +1,30 @@
+<!-- Order search and filters submit to Java rather than fetching React state. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Orders')}"></head>
+<body>
+<header th:replace="~{admin/fragments :: nav}"></header>
+<main class="shell html-section">
+    <h1>Orders</h1>
+    <form class="filter-form" method="get" action="/admin/orders">
+        <input type="search" name="search" th:value="${search}" aria-label="Search orders">
+        <select name="status" aria-label="Order status">
+            <option value="All">All statuses</option>
+            <option th:each="option : ${statuses}" th:value="${option}" th:text="${option}"
+                    th:selected="${option == status}"></option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div class="table-scroll"><table>
+        <thead><tr><th>Reference</th><th>Customer</th><th>Email</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody><tr th:each="order : ${orders}">
+            <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.order_number}"></a></td>
+            <td th:text="${order.customer_name}"></td><td th:text="${order.email}"></td>
+            <td th:text="'₦' + ${#numbers.formatInteger(order.total, 1, 'COMMA')}"></td>
+            <td th:text="${order.status}"></td>
+        </tr></tbody>
+    </table></div>
+    <p th:if="${#lists.isEmpty(orders)}">No orders match your search.</p>
+</main>
+</body>
+</html>

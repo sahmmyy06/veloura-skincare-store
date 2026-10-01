@@ -1,0 +1,50 @@
+<!-- Browser cart state is submitted to Java; Java validates stock and calculates the total. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Your bag and checkout')}"></head>
+<body>
+<div th:replace="~{fragments :: header}"></div>
+<main class="shell html-section">
+    <h1>Your bag</h1>
+    <p id="checkout-message" role="status" aria-live="polite"></p>
+    <div class="checkout-layout">
+        <!-- cart.js fills these elements using the bag saved in this browser. -->
+        <section class="bag-summary" aria-label="Bag contents">
+            <div id="cart-items"></div>
+            <h2 id="cart-total"></h2>
+            <a class="text-link" href="/shop">Continue shopping →</a>
+        </section>
+        <!-- Field names match the customer fields accepted by Java's checkout record. -->
+        <form id="checkout-form" class="html-form checkout-delivery">
+            <h2>Delivery details</h2>
+            <label>
+                Full name
+                <input name="customerName" autocomplete="name" required>
+            </label>
+            <label>
+                Email
+                <input name="email" type="email" autocomplete="email" required>
+            </label>
+            <label>
+                Phone
+                <input name="phone" type="tel" autocomplete="tel" required>
+            </label>
+            <label>
+                Address
+                <textarea name="address" autocomplete="street-address" required></textarea>
+            </label>
+            <label>
+                City
+                <input name="city" autocomplete="address-level2" required>
+            </label>
+            <label>
+                Order notes
+                <textarea name="notes"></textarea>
+            </label>
+            <button class="primary" type="submit">Place order</button>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>
