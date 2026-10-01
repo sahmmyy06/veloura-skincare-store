@@ -1,310 +1,167 @@
+/**
+ * EXPRESS APPLICATION
+ * ===================
+ *
+ * WHAT THIS FILE IS
+ * The front door of the API. It builds the Express app, applies the settings
+ * that affect every request, and mounts the route files.
+ *
+ * This file used to contain all sixteen endpoints. It is now deliberately
+ * short: it wires things together and nothing more, so you can read the whole
+ * thing in under a minute and see the complete shape of the API.
+ *
+ * HOW TO READ IT
+ * Express runs setup in the order it appears here, so the file reads top to
+ * bottom as "what happens to an incoming request":
+ *
+ *   1. security headers
+ *   2. cross-origin rules
+ *   3. JSON body parsing
+ *   4. the Open Graph image (a special case, explained below)
+ *   5. make sure the database is ready
+ *   6. the actual routes
+ *   7. the catch-all error handler
+ *
+ * THE URL MAP
+ *   /api/health              is the server awake?
+ *   /api/products            public product browsing
+ *   /api/orders              public order placement and lookup
+ *   /api/admin/*             everything behind the admin login
+ *
+ * The route files live in `server/src/routes/` and are named after their URL.
+ * If you want to see what an endpoint does, the name of its file tells you
+ * where to look.
+ */
+
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import crypto from 'node:crypto'
-import db, { initDatabase } from './db.js'
+
+import { ensureDatabaseReady } from './middleware/ensureDatabaseReady.js'
 import { ogImageBuffer } from './og-image.js'
 
-const app = express()
-const ADMIN_COOKIE = 'veloura_admin'
-const SESSION_TTL_MS = 1000 * 60 * 60 * 12
+import publicProductRoutes from './routes/products.js'
+import publicOrderRoutes from './routes/orders.js'
+import adminAuthRoutes from './routes/adminAuth.js'
+import adminDashboardRoutes from './routes/adminDashboard.js'
+import adminProductRoutes from './routes/adminProducts.js'
+import adminOrderRoutes from './routes/adminOrders.js'
 
+const app = express()
+
+/* ---------------------------------------------------------------------------
+ * 1. SECURITY HEADERS
+ * ---------------------------------------------------------------------------
+ * Helmet adds a set of protective HTTP headers. One of them,
+ * `Cross-Origin-Resource-Policy`, stops other websites from embedding our
+ * files. We switch that one off because the product images are meant to be
+ * loaded normally, and the setting would block them.
+ */
 app.use(helmet({ crossOriginResourcePolicy: false }))
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || true, credentials: true }))
+
+/* ---------------------------------------------------------------------------
+ * 2. CROSS-ORIGIN RULES (CORS)
+ * ---------------------------------------------------------------------------
+ * During local development the frontend runs on port 5173 and the API on 4000,
+ * which browsers treat as different origins. CORS tells the browser that this
+ * is allowed.
+ *
+ * `CLIENT_ORIGIN` names the one allowed frontend in production. When it is not
+ * set we allow any origin, which is convenient locally and is why the variable
+ * matters in production.
+ *
+ * `credentials: true` is required for the admin session cookie to travel
+ * between the browser and the API.
+ */
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN || true,
+    credentials: true,
+  })
+)
+
+/* ---------------------------------------------------------------------------
+ * 3. JSON BODY PARSING
+ * ---------------------------------------------------------------------------
+ * Parses incoming JSON so routes can read `req.body`. The 200kb limit is a
+ * deliberate guard: product descriptions and orders are small, so a huge body
+ * is almost certainly a mistake or an attack. It caps how much memory one
+ * request can consume.
+ */
 app.use(express.json({ limit: '200kb' }))
 
+/* ---------------------------------------------------------------------------
+ * 4. OPEN GRAPH PREVIEW IMAGE
+ * ---------------------------------------------------------------------------
+ * This is the picture shown when the shop link is shared on social media.
+ *
+ * It is registered BEFORE the database check on purpose. Serving a static image
+ * needs no database at all, so there is no reason to make social media crawlers
+ * wait for one. It is also cached for a day, because the image never changes.
+ */
 app.get('/api/og-image.jpg', (_req, res) => {
   res.set({
     'Content-Type': 'image/jpeg',
     'Content-Length': ogImageBuffer.length,
     'Cache-Control': 'public, max-age=86400, s-maxage=86400',
   })
+
   res.send(ogImageBuffer)
 })
 
-app.use(async (_req, res, next) => {
-  try {
-    await initDatabase()
-    next()
-  } catch (error) {
-    console.error('Database initialization failed:', error)
-    res.status(500).json({ message: 'Database is not ready.' })
-  }
+/* ---------------------------------------------------------------------------
+ * 5. DATABASE READINESS
+ * ---------------------------------------------------------------------------
+ * Runs before every route below. It creates the tables and seeds the starter
+ * products on the first request, then does nothing on later ones. See
+ * `middleware/ensureDatabaseReady.js` for how the caching works.
+ */
+app.use(ensureDatabaseReady)
+
+/* ---------------------------------------------------------------------------
+ * 6. HEALTH CHECK
+ * ---------------------------------------------------------------------------
+ * A tiny endpoint that answers "is the server up?". Useful for confirming a
+ * deployment worked without needing to log in.
+ */
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'veloura-api' })
 })
 
-function parseCookies(header = '') {
-  return Object.fromEntries(header.split(';').map((part) => part.trim()).filter(Boolean).map((pair) => {
-    const index = pair.indexOf('=')
-    return [decodeURIComponent(pair.slice(0, index)), decodeURIComponent(pair.slice(index + 1))]
-  }))
-}
+/* ---------------------------------------------------------------------------
+ * 7. ROUTES
+ * ---------------------------------------------------------------------------
+ * Each `app.use` hands a URL prefix to a route file. Everything inside that
+ * file is then relative to the prefix, so `router.get('/')` inside
+ * `routes/products.js` actually answers `GET /api/products`.
+ *
+ * The order matters in one place: `/api/admin/login` and the other auth routes
+ * are mounted before the protected admin routes purely for readability. The
+ * real protection comes from the `requireAdmin` middleware inside each
+ * protected route file, not from the order of these lines.
+ */
+app.use('/api/products', publicProductRoutes)
+app.use('/api/orders', publicOrderRoutes)
 
-function adminConfig() {
-  const email = process.env.ADMIN_EMAIL || (process.env.NODE_ENV !== 'production' ? 'admin@veloura.store' : '')
-  const password = process.env.ADMIN_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'veloura-admin' : '')
-  const secret = process.env.ADMIN_SESSION_SECRET || (process.env.NODE_ENV !== 'production' ? 'veloura-dev-secret-change-me' : '')
-  return { email, password, secret }
-}
+app.use('/api/admin', adminAuthRoutes)
+app.use('/api/admin/dashboard', adminDashboardRoutes)
+app.use('/api/admin/products', adminProductRoutes)
+app.use('/api/admin/orders', adminOrderRoutes)
 
-function safeEqual(a, b) {
-  const aa = Buffer.from(String(a))
-  const bb = Buffer.from(String(b))
-  return aa.length === bb.length && crypto.timingSafeEqual(aa, bb)
-}
-
-function createSession(email) {
-  const { secret } = adminConfig()
-  const expires = Date.now() + SESSION_TTL_MS
-  const payload = `${email}|${expires}`
-  const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex')
-  return Buffer.from(`${payload}|${signature}`).toString('base64url')
-}
-
-function verifySession(token) {
-  const { email, secret } = adminConfig()
-  if (!token || !email || !secret) return false
-  try {
-    const decoded = Buffer.from(token, 'base64url').toString('utf8')
-    const [sessionEmail, expiresRaw, signature] = decoded.split('|')
-    const payload = `${sessionEmail}|${expiresRaw}`
-    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex')
-    return sessionEmail === email && Number(expiresRaw) > Date.now() && safeEqual(signature, expected)
-  } catch {
-    return false
-  }
-}
-
-function setAdminCookie(res, token) {
-  const secure = process.env.NODE_ENV === 'production' || process.env.VERCEL
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(SESSION_TTL_MS / 1000)}${secure ? '; Secure' : ''}`)
-}
-
-function clearAdminCookie(res) {
-  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`)
-}
-
-function requireAdmin(req, res, next) {
-  const token = parseCookies(req.headers.cookie || '')[ADMIN_COOKIE]
-  if (!verifySession(token)) return res.status(401).json({ message: 'Admin authentication required.' })
-  next()
-}
-
-function slugify(value) {
-  return String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-}
-
-function normalizeProduct(body, existing = {}) {
-  const name = String(body.name ?? existing.name ?? '').trim()
-  const category = String(body.category ?? existing.category ?? '').trim()
-  const price = Number(body.price ?? existing.price ?? 0)
-  const stock = Number(body.stock ?? existing.stock ?? 0)
-  const featured = body.featured === true || body.featured === 1 || body.featured === '1' ? 1 : 0
-  const slug = slugify(body.slug || name || existing.slug)
-  const description = String(body.description ?? existing.description ?? '').trim()
-  const benefits = String(body.benefits ?? existing.benefits ?? '').trim()
-  const image = String(body.image ?? existing.image ?? '/products/placeholder.svg').trim() || '/products/placeholder.svg'
-  if (!name || !category || !slug || !description || !benefits) throw new Error('Name, category, description and benefits are required.')
-  if (!Number.isFinite(price) || price < 0) throw new Error('Price must be a valid positive number.')
-  if (!Number.isInteger(stock) || stock < 0) throw new Error('Stock must be a whole number of 0 or more.')
-  return { name, slug, category, price, description, benefits, image, stock, featured }
-}
-
-app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'veloura-api' }))
-
-app.get('/api/products', async (req, res) => {
-  const { category, search, featured } = req.query
-  const conditions = []
-  const args = []
-  if (category && category !== 'All') { conditions.push('category = ?'); args.push(category) }
-  if (search) { conditions.push('(name LIKE ? OR description LIKE ?)'); args.push(`%${search}%`, `%${search}%`) }
-  if (featured === 'true') conditions.push('featured = 1')
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const result = await db.execute({ sql: `SELECT * FROM products ${where} ORDER BY featured DESC, id ASC`, args })
-  res.json(result.rows)
-})
-
-app.get('/api/products/:id', async (req, res) => {
-  const result = await db.execute({ sql: 'SELECT * FROM products WHERE id = ?', args: [req.params.id] })
-  const product = result.rows[0]
-  if (!product) return res.status(404).json({ message: 'Product not found' })
-  res.json(product)
-})
-
-app.post('/api/orders', async (req, res) => {
-  const { customerName, email, phone, address, city, notes = '', items } = req.body
-  if (!customerName || !email || !phone || !address || !city || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: 'Please complete the checkout form and add at least one product.' })
-  }
-  if (!/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ message: 'Enter a valid email address.' })
-
-  const tx = await db.transaction('write')
-  try {
-    let total = 0
-    const resolved = []
-    for (const item of items) {
-      const result = await tx.execute({ sql: 'SELECT id, name, price, stock FROM products WHERE id = ?', args: [item.id] })
-      const product = result.rows[0]
-      const quantity = Number(item.quantity)
-      if (!product || !Number.isInteger(quantity) || quantity < 1) throw new Error('One or more cart items are invalid.')
-      if (Number(product.stock) < quantity) throw new Error(`${product.name} only has ${product.stock} item(s) left.`)
-      total += Number(product.price) * quantity
-      resolved.push({ ...product, quantity })
-    }
-
-    const orderNumber = `VEL-${Date.now().toString().slice(-8)}-${Math.floor(100 + Math.random() * 900)}`
-    const orderResult = await tx.execute({
-      sql: 'INSERT INTO orders (order_number, customer_name, email, phone, address, city, notes, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      args: [orderNumber, customerName.trim(), email.trim().toLowerCase(), phone.trim(), address.trim(), city.trim(), notes.trim(), total],
-    })
-
-    for (const item of resolved) {
-      await tx.execute({
-        sql: 'INSERT INTO order_items (order_id, product_id, product_name, price, quantity) VALUES (?, ?, ?, ?, ?)',
-        args: [orderResult.lastInsertRowid, item.id, item.name, item.price, item.quantity],
-      })
-      await tx.execute({ sql: 'UPDATE products SET stock = stock - ? WHERE id = ?', args: [item.quantity, item.id] })
-    }
-
-    await tx.commit()
-    res.status(201).json({ orderNumber, total, status: 'pending', message: 'Order created successfully.' })
-  } catch (error) {
-    await tx.rollback()
-    res.status(400).json({ message: error.message || 'Could not create order.' })
-  }
-})
-
-app.get('/api/orders/:orderNumber', async (req, res) => {
-  const orderResult = await db.execute({ sql: 'SELECT * FROM orders WHERE order_number = ?', args: [req.params.orderNumber] })
-  const order = orderResult.rows[0]
-  if (!order) return res.status(404).json({ message: 'Order not found' })
-  const itemsResult = await db.execute({ sql: 'SELECT product_id, product_name, price, quantity FROM order_items WHERE order_id = ?', args: [order.id] })
-  res.json({ ...order, items: itemsResult.rows })
-})
-
-// Admin authentication
-app.post('/api/admin/login', (req, res) => {
-  const { email, password } = req.body || {}
-  const config = adminConfig()
-  if (!config.email || !config.password || !config.secret) {
-    return res.status(503).json({ message: 'Admin access has not been configured on this environment.' })
-  }
-  if (!safeEqual(String(email || '').toLowerCase(), config.email.toLowerCase()) || !safeEqual(password || '', config.password)) {
-    return res.status(401).json({ message: 'Invalid email or password.' })
-  }
-  setAdminCookie(res, createSession(config.email))
-  res.json({ ok: true, email: config.email })
-})
-
-app.post('/api/admin/logout', (_req, res) => {
-  clearAdminCookie(res)
-  res.json({ ok: true })
-})
-
-app.get('/api/admin/me', requireAdmin, (_req, res) => {
-  res.json({ authenticated: true, email: adminConfig().email })
-})
-
-// Admin dashboard
-app.get('/api/admin/dashboard', requireAdmin, async (_req, res) => {
-  const [productStats, orderStats, recentOrders, lowStock] = await Promise.all([
-    db.execute('SELECT COUNT(*) AS total_products, COALESCE(SUM(stock),0) AS total_units, SUM(CASE WHEN stock <= 5 THEN 1 ELSE 0 END) AS low_stock FROM products'),
-    db.execute("SELECT COUNT(*) AS total_orders, COALESCE(SUM(total),0) AS revenue, COUNT(DISTINCT email) AS customers, SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending FROM orders"),
-    db.execute('SELECT id, order_number, customer_name, total, status, created_at FROM orders ORDER BY id DESC LIMIT 6'),
-    db.execute('SELECT id, name, category, stock, price, image FROM products WHERE stock <= 5 ORDER BY stock ASC, name ASC LIMIT 8'),
-  ])
-  res.json({
-    products: productStats.rows[0],
-    orders: orderStats.rows[0],
-    recentOrders: recentOrders.rows,
-    lowStock: lowStock.rows,
-  })
-})
-
-// Admin products
-app.get('/api/admin/products', requireAdmin, async (req, res) => {
-  const search = String(req.query.search || '').trim()
-  const category = String(req.query.category || '').trim()
-  const conditions = []
-  const args = []
-  if (search) { conditions.push('(name LIKE ? OR slug LIKE ? OR description LIKE ?)'); args.push(`%${search}%`, `%${search}%`, `%${search}%`) }
-  if (category && category !== 'All') { conditions.push('category = ?'); args.push(category) }
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const result = await db.execute({ sql: `SELECT * FROM products ${where} ORDER BY id DESC`, args })
-  res.json(result.rows)
-})
-
-app.post('/api/admin/products', requireAdmin, async (req, res) => {
-  try {
-    const p = normalizeProduct(req.body)
-    const result = await db.execute({
-      sql: 'INSERT INTO products (name, slug, category, price, description, benefits, image, stock, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      args: [p.name, p.slug, p.category, p.price, p.description, p.benefits, p.image, p.stock, p.featured],
-    })
-    const created = await db.execute({ sql: 'SELECT * FROM products WHERE id = ?', args: [result.lastInsertRowid] })
-    res.status(201).json(created.rows[0])
-  } catch (error) {
-    res.status(400).json({ message: error.message.includes('UNIQUE') ? 'A product with this slug already exists.' : error.message })
-  }
-})
-
-app.put('/api/admin/products/:id', requireAdmin, async (req, res) => {
-  try {
-    const current = (await db.execute({ sql: 'SELECT * FROM products WHERE id = ?', args: [req.params.id] })).rows[0]
-    if (!current) return res.status(404).json({ message: 'Product not found.' })
-    const p = normalizeProduct(req.body, current)
-    await db.execute({
-      sql: 'UPDATE products SET name=?, slug=?, category=?, price=?, description=?, benefits=?, image=?, stock=?, featured=? WHERE id=?',
-      args: [p.name, p.slug, p.category, p.price, p.description, p.benefits, p.image, p.stock, p.featured, req.params.id],
-    })
-    const updated = await db.execute({ sql: 'SELECT * FROM products WHERE id = ?', args: [req.params.id] })
-    res.json(updated.rows[0])
-  } catch (error) {
-    res.status(400).json({ message: error.message.includes('UNIQUE') ? 'A product with this slug already exists.' : error.message })
-  }
-})
-
-app.delete('/api/admin/products/:id', requireAdmin, async (req, res) => {
-  const linked = await db.execute({ sql: 'SELECT COUNT(*) AS count FROM order_items WHERE product_id = ?', args: [req.params.id] })
-  if (Number(linked.rows[0]?.count || 0) > 0) {
-    return res.status(409).json({ message: 'This product belongs to an existing order and cannot be deleted. Set stock to 0 instead.' })
-  }
-  await db.execute({ sql: 'DELETE FROM products WHERE id = ?', args: [req.params.id] })
-  res.json({ ok: true })
-})
-
-// Admin orders
-app.get('/api/admin/orders', requireAdmin, async (req, res) => {
-  const search = String(req.query.search || '').trim()
-  const status = String(req.query.status || '').trim()
-  const conditions = []
-  const args = []
-  if (search) { conditions.push('(order_number LIKE ? OR customer_name LIKE ? OR email LIKE ? OR phone LIKE ?)'); args.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`) }
-  if (status && status !== 'All') { conditions.push('status = ?'); args.push(status.toLowerCase()) }
-  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const result = await db.execute({ sql: `SELECT * FROM orders ${where} ORDER BY id DESC`, args })
-  res.json(result.rows)
-})
-
-app.get('/api/admin/orders/:id', requireAdmin, async (req, res) => {
-  const order = (await db.execute({ sql: 'SELECT * FROM orders WHERE id = ?', args: [req.params.id] })).rows[0]
-  if (!order) return res.status(404).json({ message: 'Order not found.' })
-  const items = await db.execute({ sql: 'SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC', args: [order.id] })
-  res.json({ ...order, items: items.rows })
-})
-
-app.patch('/api/admin/orders/:id/status', requireAdmin, async (req, res) => {
-  const allowed = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']
-  const status = String(req.body?.status || '').toLowerCase()
-  if (!allowed.includes(status)) return res.status(400).json({ message: 'Invalid order status.' })
-  const current = (await db.execute({ sql: 'SELECT * FROM orders WHERE id = ?', args: [req.params.id] })).rows[0]
-  if (!current) return res.status(404).json({ message: 'Order not found.' })
-  await db.execute({ sql: 'UPDATE orders SET status = ? WHERE id = ?', args: [status, req.params.id] })
-  const updated = await db.execute({ sql: 'SELECT * FROM orders WHERE id = ?', args: [req.params.id] })
-  res.json(updated.rows[0])
-})
-
-app.use((err, _req, res, _next) => {
-  console.error(err)
+/* ---------------------------------------------------------------------------
+ * 8. CATCH-ALL ERROR HANDLER
+ * ---------------------------------------------------------------------------
+ * Express recognises this as an error handler because it takes four arguments.
+ * Any error thrown by a route that did not handle it itself ends up here.
+ *
+ * We log the full error for the developer but send back a generic message, so
+ * internal details are never exposed to the browser.
+ *
+ * This must be registered LAST, after every route, or it will not catch
+ * anything.
+ */
+app.use((error, _req, res, _next) => {
+  console.error(error)
   res.status(500).json({ message: 'Unexpected server error.' })
 })
 

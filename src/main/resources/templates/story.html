@@ -1,0 +1,26 @@
+<!-- Brand story has a dedicated page instead of extending the storefront indefinitely. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Our story')}"></head>
+<body class="story-page">
+<div th:replace="~{fragments :: header}"></div>
+<main>
+    <section class="shell story story-page-content">
+        <div class="story-image">
+            <img src="/images/veloura-story-still-life.webp"
+                 alt="Skincare products arranged on a vanity">
+        </div>
+        <div class="story-copy">
+            <h1>Skincare should feel like care, not homework.</h1>
+            <p>We keep the routine simple: rich textures, useful ingredients and products
+                that feel beautiful on your shelf and comfortable on your skin.</p>
+            <a class="primary" href="/shop">Explore the collection
+                <svg th:replace="~{fragments :: icon('arrow-right')}"></svg>
+            </a>
+        </div>
+    </section>
+    <section th:replace="~{fragments :: benefits}"></section>
+</main>
+<footer th:replace="~{fragments :: footer}"></footer>
+</body>
+</html>

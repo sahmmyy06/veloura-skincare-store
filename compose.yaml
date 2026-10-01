@@ -1,0 +1,29 @@
+# One container serves the Spring API, HTML pages, and images.
+services:
+  store:
+    build: .
+    image: veloura-store:local
+    init: true
+    restart: unless-stopped
+    ports:
+      # Docker chooses a free host port. The port inside this container stays 4000.
+      # Bind only to this computer; use an HTTPS proxy for a public deployment.
+      - target: 4000
+        published: "${HOST_PORT_RANGE:-4000-4099}"
+        host_ip: 127.0.0.1
+    environment:
+      PORT: "4000"
+      DATABASE_URL: jdbc:sqlite:/app/server/data/veloura.db
+      # Local HTTP needs non-Secure cookies. Production must use true and HTTPS.
+      VELOURA_PRODUCTION: "${VELOURA_PRODUCTION:-false}"
+      CLIENT_ORIGIN: "${CLIENT_ORIGIN:-http://localhost:4000}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_SESSION_SECRET: "${ADMIN_SESSION_SECRET:-}"
+    volumes:
+      # Named storage survives container rebuilds and normal 'docker compose down'.
+      - veloura-data:/app/server/data
+    stop_grace_period: 30s
+
+volumes:
+  veloura-data:

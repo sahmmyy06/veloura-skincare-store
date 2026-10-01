@@ -1,0 +1,36 @@
+<!-- Summary data comes from the same queries as the admin dashboard API. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Dashboard')}"></head>
+<body>
+<header th:replace="~{admin/fragments :: nav}"></header>
+<main class="shell html-section">
+    <h1>Store overview</h1>
+    <div class="stats-grid">
+        <div class="stat-card">Orders<strong th:text="${summary.orders.total_orders}"></strong></div>
+        <div class="stat-card">Revenue<strong th:text="'₦' + ${#numbers.formatInteger(summary.orders.revenue, 1, 'COMMA')}"></strong></div>
+        <div class="stat-card">Customers<strong th:text="${summary.orders.customers}"></strong></div>
+        <div class="stat-card">Pending orders<strong th:text="${summary.orders.pending}"></strong></div>
+        <div class="stat-card">Products<strong th:text="${summary.products.total_products}"></strong></div>
+        <div class="stat-card">Units in stock<strong th:text="${summary.products.total_units}"></strong></div>
+    </div>
+    <h2>Recent orders</h2>
+    <div class="table-scroll"><table>
+        <thead><tr><th>Reference</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody><tr th:each="order : ${summary.recentOrders}">
+            <td><a th:href="@{/admin/orders/{id}(id=${order.id})}" th:text="${order.order_number}"></a></td>
+            <td th:text="${order.customer_name}"></td>
+            <td th:text="'₦' + ${#numbers.formatInteger(order.total, 1, 'COMMA')}"></td>
+            <td th:text="${order.status}"></td>
+        </tr></tbody>
+    </table></div>
+    <p th:if="${#lists.isEmpty(summary.recentOrders)}">No orders yet.</p>
+    <h2>Low-stock alerts</h2>
+    <p th:if="${#lists.isEmpty(summary.lowStock)}">All products have more than five units.</p>
+    <p th:each="product : ${summary.lowStock}">
+        <a th:href="@{/admin/products/{id}/edit(id=${product.id})}"
+           th:text="${product.name} + ' — ' + ${product.stock} + ' left'"></a>
+    </p>
+</main>
+</body>
+</html>

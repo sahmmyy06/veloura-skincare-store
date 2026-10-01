@@ -1,0 +1,20 @@
+<!-- Credentials are checked by Java and stored only in an HttpOnly session cookie. -->
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Admin sign in')}"></head>
+<body>
+<main class="login-panel">
+    <a class="brand brand-lockup" href="/">
+        <img src="/brand/icon-192.png" alt="" width="32" height="32">VELOURA
+    </a>
+    <h1>Admin workspace</h1>
+    <p>Sign in to manage your store.</p>
+    <p class="error" th:if="${error}" th:text="${error}" role="alert"></p>
+    <form action="/admin/login" method="post" class="html-form">
+        <label>Email<input name="email" type="email" autocomplete="username" required></label>
+        <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" type="submit">Sign in</button>
+    </form>
+</main>
+</body>
+</html>
