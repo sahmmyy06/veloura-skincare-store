@@ -40,13 +40,14 @@ pipeline {
     }
     stage('Smoke test container') {
       steps {
+        // Jenkins itself runs in a container, so 127.0.0.1 here is not the Docker host.
+        // Run the health check from inside the app container instead.
         sh '''
           set -eu
-          CID=$(docker run -d -p 127.0.0.1::4000 "$IMAGE")
+          CID=$(docker run -d "$IMAGE")
           trap 'docker rm -f "$CID" >/dev/null 2>&1 || true' EXIT
-          PORT=$(docker port "$CID" 4000/tcp | head -1 | sed 's/.*://')
           for i in $(seq 1 30); do
-            if curl -fsS "http://127.0.0.1:$PORT/api/health" | grep -q '"ok":true'; then
+            if docker exec "$CID" curl -fsS http://127.0.0.1:4000/api/health | grep -q '"ok":true'; then
               echo "health check passed"; exit 0
             fi
             sleep 2
